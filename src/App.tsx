@@ -1,9 +1,18 @@
-import { Accessibility } from './components/Accessibility';
-
+import { Header } from './components/Header';
+import { Hero } from './components/Hero';
+import { Features } from './components/Features';
+import { StudentForm } from './components/StudentForm';
+import { HowItWorks } from './components/HowItWorks';
+import { Footer } from './components/Footer';
 export function App() {
-  return (
-    <div className="flex flex-col min-h-screen w-full bg-gray-50">
-      <Accessibility />
-    </div>
-  );
+  return <div className="flex flex-col min-h-screen w-full bg-gray-50">
+      <Header />
+      <main className="flex-grow">
+        <Hero />
+        <Features />
+        <StudentForm />
+        <HowItWorks />
+      </main>
+      <Footer />
+    </div>;
 }
