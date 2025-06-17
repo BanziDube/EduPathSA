@@ -1,107 +1,96 @@
-import{ useState, useEffect } from 'react';
-import { Volume2Icon, TypeIcon, EyeIcon } from 'lucide-react';
+import { useState } from 'react';
 
 export function Accessibility() {
-  const [fontSize, setFontSize] = useState('16px');
-  const [highContrast, setHighContrast] = useState(false);
+  const [userInput, setUserInput] = useState('');
+  const [recommendation, setRecommendation] = useState('');
+  const [isListening, setIsListening] = useState(false);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty('--user-font-size', fontSize);
-    document.body.classList.toggle('high-contrast', highContrast);
-  }, [fontSize, highContrast]);
+  // Simulated AI Recommendation Handler
+  const handleRecommendation = () => {
+    // Replace with API logic later
+    const response = `Based on your input, we recommend applying to Nelson Mandela University for a BSc in Computer Science. You may also qualify for the Funza Lushaka bursary.`;
+    setRecommendation(response);
+    speak(response);
+  };
 
-  const speakText = () => {
-    const message =
-      'Welcome to EduPath SA Accessibility Settings. You can adjust font size, toggle high contrast mode, and hear this message using the buttons provided.';
+  // Basic Text-to-Speech
+  const speak = (text: string) => {
     const synth = window.speechSynthesis;
-    const utter = new SpeechSynthesisUtterance(message);
-    utter.lang = 'en-ZA';
+    const utter = new SpeechSynthesisUtterance(text);
     synth.speak(utter);
   };
 
+  // Basic Speech Recognition
+  const handleMicInput = () => {
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    if (!SpeechRecognition) return alert("Speech Recognition not supported in this browser.");
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-ZA';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    setIsListening(true);
+    recognition.start();
+
+    recognition.onresult = (event: any) => {
+      const speechResult = event.results[0][0].transcript;
+      setUserInput(speechResult);
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      alert("Couldn't capture voice input. Please try again.");
+    };
+  };
+
   return (
-    <section id="accessibility" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Accessibility Features
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            EduPath SA is built with inclusive features to ensure every student
-            can access, understand, and interact with the platform effectively.
-          </p>
-        </div>
+    <section id="accessibility" className="bg-blue-50 py-16 px-4">
+      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-8">
+        <h2 className="text-2xl font-bold text-blue-700 mb-4">EduPath Assistant (Accessibility Mode)</h2>
+        <p className="text-gray-700 mb-6">
+          Speak or type your academic background and interests. Our assistant will suggest suitable institutions, programs, and bursaries tailored to you.
+        </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-left">
-          {/* Text-to-Speech */}
-          <div className="bg-blue-50 rounded-xl p-8 relative">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 bg-blue-600 rounded-full p-3">
-              <Volume2Icon size={24} className="text-white" />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-              Text-to-Speech
-            </h3>
-            <p className="text-gray-700 mb-4">
-              Have important text read aloud to assist users with visual
-              impairments or reading challenges.
-            </p>
+        <div className="flex flex-col gap-4">
+          <textarea
+            rows={4}
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="E.g., I got 70% in Maths and want to study teaching..."
+            className="p-4 border rounded-lg resize-none"
+          />
+
+          <div className="flex items-center gap-4">
             <button
-              onClick={speakText}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              aria-label="Play accessibility message"
+              onClick={handleMicInput}
+              className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition ${isListening ? 'animate-pulse' : ''}`}
             >
-              🔊 Speak Message
+              🎤 {isListening ? 'Listening...' : 'Speak Input'}
+            </button>
+
+            <button
+              onClick={handleRecommendation}
+              disabled={!userInput}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+            >
+              🎯 Get Recommendation
             </button>
           </div>
 
-          {/* Font Size Controls */}
-          <div className="bg-green-50 rounded-xl p-8 relative">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 bg-green-600 rounded-full p-3">
-              <TypeIcon size={24} className="text-white" />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-              Font Size Control
-            </h3>
-            <p className="text-gray-700 mb-4">
-              Adjust the font size of text to suit your reading preferences and
-              comfort.
-            </p>
-            <div className="flex gap-2">
+          {recommendation && (
+            <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-600 rounded">
+              <h3 className="text-green-700 font-semibold mb-2">Suggested Path:</h3>
+              <p className="text-gray-800">{recommendation}</p>
               <button
-                onClick={() => setFontSize('20px')}
-                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                onClick={() => speak(recommendation)}
+                className="mt-3 text-sm text-blue-600 underline hover:text-blue-800"
               >
-                A+
-              </button>
-              <button
-                onClick={() => setFontSize('16px')}
-                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                A
+                🔊 Read this out loud
               </button>
             </div>
-          </div>
-
-          {/* High Contrast Toggle */}
-          <div className="bg-purple-50 rounded-xl p-8 relative">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 bg-purple-600 rounded-full p-3">
-              <EyeIcon size={24} className="text-white" />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-              High Contrast Mode
-            </h3>
-            <p className="text-gray-700 mb-4">
-              Toggle high-contrast mode to enhance visibility for users with
-              vision impairments or sensitivity to colors.
-            </p>
-            <button
-              onClick={() => setHighContrast(!highContrast)}
-              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-            >
-              {highContrast ? 'Disable' : 'Enable'} High Contrast
-            </button>
-          </div>
+          )}
         </div>
       </div>
     </section>
