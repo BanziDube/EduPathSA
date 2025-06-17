@@ -1,3 +1,18 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+body.high-contrast {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+body.high-contrast .text-gray-700 {
+  color: #fff !important;
+}
+
+body.high-contrast button {
+  background-color: #fff !important;
+  color: #000 !important;
+  border: 1px solid #000;
+}

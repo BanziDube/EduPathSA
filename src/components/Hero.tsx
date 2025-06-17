@@ -1,4 +1,3 @@
-import React from 'react';
 import { GraduationCapIcon, CompassIcon, BookOpenIcon } from 'lucide-react';
 export function Hero() {
   return <section className="bg-gradient-to-br from-blue-600 to-indigo-800 text-white py-20">

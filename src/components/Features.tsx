@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckCircleIcon, SearchIcon, BookIcon, TrendingUpIcon } from 'lucide-react';
 export function Features() {
   return <section id="features" className="py-20 bg-white">
