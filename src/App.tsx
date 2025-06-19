@@ -8,8 +8,7 @@ import { Footer } from './components/Footer';
 import RegisterPage from './RegisterPage';
 import { SignIn } from './SignIn';
 import { useState } from 'react';
-
-
+import { Recommendations } from './components/Recommendations'; // ✅ Imported
 
 export function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -45,10 +44,13 @@ export function App() {
             />
             <Route path="/register" element={<RegisterPage />} />
             <Route
-            path="/student-form" element={<StudentForm onSignOut={handleSignOut} />} />
-            
-
-              
+              path="/student-form"
+              element={<StudentForm onSignOut={handleSignOut} />}
+            />
+            <Route
+              path="/recommendations"
+              element={<Recommendations />} // ✅ Correctly placed here
+            />
             <Route
               path="*"
               element={<SignIn onSignInSuccess={handleSignInSuccess} />}
