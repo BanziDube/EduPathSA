@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
 import axios from 'axios'; // <-- Make sure to install axios via npm/yarn
+import { useNavigate } from 'react-router-dom';
+
 
 // ✅ Define props interface
 interface StudentFormProps {
@@ -56,6 +58,9 @@ export function StudentForm({ onSignOut }: StudentFormProps) {
       [name]: value,
     });
   };
+
+  const navigate = useNavigate();
+
 
   // Handle subject changes
   const handleSubjectChange = (index: number, field: string, value: string) => {
@@ -167,6 +172,9 @@ export function StudentForm({ onSignOut }: StudentFormProps) {
     // Example: send submissionData to your backend or Firestore here
     alert("Form submitted successfully! We'll generate your personalized recommendations.");
     console.log(submissionData);
+
+    navigate('/recommendations', { state: { formData } });
+
 
     // Reset form & file input after submit
     setFormData({
@@ -542,5 +550,6 @@ export function StudentForm({ onSignOut }: StudentFormProps) {
         </div>
       </div>
     </section>
+    
   );
 }

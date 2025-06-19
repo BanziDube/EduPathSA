@@ -19,14 +19,13 @@ interface BursaryProps {
   formData: FormData;
 }
 
-// ✅ Generate structured Gemini prompt
 function createBursaryPrompt(formData: FormData): string {
   const { firstName, province, grade, subjects, interests, preferredInstitutionType } = formData;
   const academicSummary = subjects.map(sub => `${sub.name}: ${sub.mark}%`).join(', ');
   const interestSummary = interests.join(', ');
 
   return `
-You are an expert South African bursary advisor helping students discover **both private and public** funding options.
+You are an expert South African bursary advisor helping students discover both private and public funding options.
 
 Student Profile:
 - Name: ${firstName}
@@ -37,28 +36,26 @@ Student Profile:
 - Preferred Institution Type: ${preferredInstitutionType}
 
 Please recommend:
-1. At least 3 bursaries or funding schemes, **including NSFAS** if applicable.
+1. At least 3 bursaries or funding schemes, including NSFAS if applicable.
 2. For each bursary, provide:
    • Bursary name  
    • Eligibility summary  
    • Application deadline (if available)  
    • Why this student qualifies  
    • How to apply or get started  
-3. Prioritize funding programs that support financially needy students, and mention **NSFAS** if they are a fit.
+3. Prioritize funding programs that support financially needy students, and mention NSFAS if they are a fit.
 
 Format cleanly. No asterisks for emphasis unless for bullet points. Keep it friendly and concise.
 `;
 }
 
-
-// ✅ Clean up Gemini output to trim *, emojis, and fluff
 function formatResponse(raw: string): string {
   return raw
-    .replace(/\*\*(.*?)\*\*/g, '$1') // remove **bold**
-    .replace(/^\* /gm, '• ') // keep bullet points
-    .replace(/\n{3,}/g, '\n\n') // trim excess spacing
-    .replace(/^\s*\*.*important.*$/gim, '') // remove disclaimer lines
-    .replace(/^\s*[*•]\s*/gm, '• ') // normalize bullet symbols
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/^\* /gm, '• ')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/^\s*\*.*important.*$/gim, '')
+    .replace(/^\s*[*•]\s*/gm, '• ')
     .trim();
 }
 
@@ -79,12 +76,10 @@ export const Bursary: React.FC<BursaryProps> = ({ formData }) => {
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
           {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-            }),
+              contents: [{ parts: [{ text: prompt }] }]
+            })
           }
         );
 
@@ -104,24 +99,39 @@ export const Bursary: React.FC<BursaryProps> = ({ formData }) => {
   }, [formData]);
 
   return (
-    <section className="py-16 px-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-blue-700">Bursary Recommendations</h2>
+    <section className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-8">
+      <h2 className="text-2xl font-semibold text-blue-700 mb-4">
+        🎓 Bursary Recommendations
+      </h2>
 
       {loading && (
-        <div className="flex items-center text-gray-600">
-          <Loader2 className="animate-spin mr-2" /> Generating your recommendations...
+        <div className="flex items-center text-gray-600 animate-pulse">
+          <Loader2 className="animate-spin mr-2" />
+          Generating your bursary matches...
         </div>
       )}
 
       {error && (
-        <div className="text-red-600 flex items-center">
-          <AlertTriangle className="mr-2" /> {error}
+        <div className="flex items-center text-red-600 bg-red-50 border border-red-200 p-4 rounded-md mt-2">
+          <AlertTriangle className="mr-2" />
+          {error}
         </div>
       )}
 
       {!loading && !error && (
-        <div className="whitespace-pre-wrap bg-blue-50 p-6 rounded-md shadow text-gray-800 leading-relaxed">
-          {recommendations}
+        <div className="space-y-4 text-gray-800 leading-relaxed">
+          {recommendations.split('\n\n').map((para, idx) => (
+            <div
+              key={idx}
+              className="bg-blue-50 border border-blue-100 rounded-md p-4 transition duration-200 hover:shadow-sm"
+            >
+              {para.split('\n').map((line, i) => (
+                <p key={i} className={line.startsWith('•') ? 'ml-4 list-disc' : ''}>
+                  {line}
+                </p>
+              ))}
+            </div>
+          ))}
         </div>
       )}
     </section>
