@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
-import { ethnicities, FormData, genders, grades, provinces, Subject, subjects } from '../interfaces/formTypes';
+import { ethnicities, FormData, genders, grades, provinces, subjects } from '../interfaces/formTypes';
 
 export function StudentForm() {
   const [step, setStep] = useState(1);
