@@ -1,7 +1,6 @@
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Features } from './components/Features';
-import { StudentForm } from './components/StudentForm';
 import { HowItWorks } from './components/HowItWorks';
 import { Footer } from './components/Footer';
 export function App() {
@@ -10,7 +9,6 @@ export function App() {
       <main className="flex-grow">
         <Hero />
         <Features />
-        <StudentForm />
         <HowItWorks />
       </main>
       <Footer />

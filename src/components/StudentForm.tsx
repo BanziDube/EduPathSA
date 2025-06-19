@@ -2,7 +2,24 @@ import React, { useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
 export function StudentForm() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  type Subject = {
+    name: string;
+    mark: string;
+  };
+ 
+  interface StudentFormData {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    province: string;
+    grade: string;
+    subjects: Subject[];
+    interests: string[];
+    preferredInstitutionType: string;
+  }
+ 
+  const [formData, setFormData] = useState<StudentFormData>({
     firstName: '',
     lastName: '',
     email: '',
@@ -68,7 +85,17 @@ export function StudentForm() {
       });
     }
   };
-  const nextStep = () => setStep(step + 1);
+    const nextStep = () => {
+    if (step === 1) {
+      const { firstName, lastName, email, province, grade } = formData;
+      if (!firstName || !lastName || !email || !province || !grade) {
+        alert("Please fill in all required personal information to continue.");
+        return;
+      }
+    }
+    setStep(step + 1);
+  };
+ 
   const prevStep = () => setStep(step - 1);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,9 +276,15 @@ export function StudentForm() {
               {step > 1 && <button type="button" onClick={prevStep} className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                   Back
                 </button>}
-              {step < 3 ? <button type="button" onClick={nextStep} className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
-                  Next <ArrowRightIcon size={16} className="ml-2" />
-                </button> : <button type="submit" className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            {step < 3 ?
+              <button
+                type="button"
+                onClick={nextStep}
+                className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+              >
+               <>Next <ArrowRightIcon size={16} className="ml-2" /></>
+ 
+              </button> : <button type="submit" className="ml-auto px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                   Get Recommendations
                 </button>}
             </div>
