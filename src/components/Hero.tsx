@@ -1,4 +1,8 @@
-import React from 'react';
+
+
+import { Link } from 'react-router-dom'; // ✅
+
+
 import { GraduationCapIcon, CompassIcon, BookOpenIcon } from 'lucide-react';
 export function Hero() {
   return <section className="bg-gradient-to-br from-blue-600 to-indigo-800 text-white py-20">
@@ -13,9 +17,10 @@ export function Hero() {
               youth through personalized recommendations and guidance.
             </p>
             <div className="flex flex-wrap gap-4">
-              <a href="#form" className="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors">
-                Get Started
-              </a>
+             <Link to="/register" className="bg-white text-blue-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition-colors">
+              Get Started
+            </Link>
+
               <a href="#how-it-works" className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white/10 transition-colors">
                 Learn More
               </a>

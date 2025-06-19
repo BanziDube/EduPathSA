@@ -1,4 +1,3 @@
-import React from 'react';
 import { ClipboardCheckIcon, BarChart2Icon, AwardIcon, TargetIcon } from 'lucide-react';
 export function HowItWorks() {
   return <section id="how-it-works" className="py-20 bg-white">
