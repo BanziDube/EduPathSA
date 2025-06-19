@@ -1,61 +1,104 @@
 import React, { useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
+import { ethnicities, FormData, genders, grades, provinces, Subject, subjects } from '../interfaces/formTypes';
+
 export function StudentForm() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
+
+  type ValidOptionsMap = {
+    [key: string]: readonly string[];
+  };
+  const optionsMap: ValidOptionsMap = {
+    ethnicity: ethnicities,
+    gender: genders,
+    province: provinces,
+    grade: grades,
+    subject: subjects
+  }
+
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [subjectMark, setSubjectMark] = useState('');
+
+  const handleAddSubject = () => {
+  if (!selectedSubject || !subjectMark) {
+    alert('Please select a subject and enter a mark');
+    return;
+  }
+
+  if (formData.subjects.length >= 7) {
+    alert('Maximum of 7 subjects allowed');
+    return;
+  }
+
+  if (formData.subjects.some(s => s.name === selectedSubject)) {
+    alert('Subject already added');
+    return;
+  }
+
+  const newSubject = { name: selectedSubject, mark: subjectMark };
+
+  setFormData(prev => ({
+    ...prev,
+    subjects: [...prev.subjects, newSubject]
+  }));
+
+    setSelectedSubject('');
+    setSubjectMark('');
+  };
+
+  const [formData, setFormData] = useState<FormData>({
+    ethnicity: '',
+    gender: '',
     province: '',
     grade: '',
-    subjects: [{
-      name: '',
-      mark: ''
-    }],
-    interests: [],
+    subjects: [{ name: '', mark: '' }],
+    interests:[],
     preferredInstitutionType: ''
   });
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const {
-      name,
-      value
-    } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-  const handleSubjectChange = (index: number, field: string, value: string) => {
+
+    const handleSubjectChange = (index: number, field: 'name' | 'mark', value: string) => {
     const updatedSubjects = [...formData.subjects];
-    updatedSubjects[index] = {
-      ...updatedSubjects[index],
-      [field]: value
-    };
-    setFormData({
-      ...formData,
+    updatedSubjects[index][field] = value;
+
+    setFormData(prev => ({
+      ...prev,
       subjects: updatedSubjects
-    });
+    }));
   };
-  const addSubject = () => {
-    setFormData({
-      ...formData,
-      subjects: [...formData.subjects, {
-        name: '',
-        mark: ''
-      }]
-    });
-  };
+
   const removeSubject = (index: number) => {
     const updatedSubjects = [...formData.subjects];
     updatedSubjects.splice(index, 1);
-    setFormData({
-      ...formData,
+
+    setFormData(prev => ({
+      ...prev,
       subjects: updatedSubjects
-    });
+    }));
   };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
+  setFormData: React.Dispatch<React.SetStateAction<any>>
+  ) => {
+        const {name, value} = e.target;
+
+        setFormData((prev: any) => ({
+          ...prev, 
+          [name]: value
+        }));
+
+        const validOptions = optionsMap[name];
+        if(validOptions){
+          if(validOptions.includes(value)){
+            console.log(`Valid ${name} selection made`, value);
+          }else{
+            console.warn(`Invalid ${name} selection made`, value);
+          }
+        }
+      }
+    
+  
   const handleInterestToggle = (interest: string) => {
-    const currentInterests = formData.interests as string[];
+    const currentInterests = formData.interests ;
     if (currentInterests.includes(interest)) {
       setFormData({
         ...formData,
@@ -104,31 +147,28 @@ export function StudentForm() {
                   Personal Information
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                      First Name
+                   <div>
+                    <label htmlFor="ethnicity" className="block text-sm font-medium text-gray-700 mb-1">
+                      Ethnicity
                     </label>
-                    <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required />
+                    <select id="ethnicity" name="ethnicity" value={formData.ethnicity} onChange={(e) => handleSelectChange(e, setFormData)} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                     <option value="">Select an Ethnicity</option>
+                     {ethnicities.map(option =>(
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
                   </div>
+
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                      Last Name
+                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
+                      Gender
                     </label>
-                    <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone Number
-                    </label>
-                    <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
+                    <select id="gender" name="gender" value={formData.gender} onChange={(e) => handleSelectChange(e, setFormData)} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                      <option value="">Select a Gender</option>
+                      {genders.map(option =>(
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -136,25 +176,22 @@ export function StudentForm() {
                     <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">
                       Province
                     </label>
-                    <select id="province" name="province" value={formData.province} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
-                      <option value="">Select Province</option>
-                      <option value="Eastern Cape">Eastern Cape</option>
-                      <option value="Free State">Free State</option>
-                      <option value="Gauteng">Gauteng</option>
-                      <option value="KwaZulu-Natal">KwaZulu-Natal</option>
-                      <option value="Limpopo">Limpopo</option>
-                      <option value="Mpumalanga">Mpumalanga</option>
-                      <option value="Northern Cape">Northern Cape</option>
-                      <option value="North West">North West</option>
-                      <option value="Western Cape">Western Cape</option>
+                    <select id="province" name="province" value={formData.province} onChange={(e) => handleSelectChange(e, setFormData)} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                      <option value="">Select a Province</option>
+                      {provinces.map(option =>(
+                        <option key={option} value={option}>{option}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
                     <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-1">
                       Current Grade
                     </label>
-                    <select id="grade" name="grade" value={formData.grade} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
+                    <select id="grade" name="grade" value={formData.grade} onChange={(e) => handleSelectChange(e, setFormData)} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" required>
                       <option value="">Select Grade</option>
+                      {grades.map(option =>(
+                        <option key={option} value={option}>{option}</option>
+                      ))}
                       <option value="Grade 11">Grade 11</option>
                       <option value="Grade 12">Grade 12</option>
                       <option value="Completed Matric">Completed Matric</option>
@@ -162,58 +199,87 @@ export function StudentForm() {
                   </div>
                 </div>
               </div>}
-            {step === 2 && <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Academic Information
-                </h3>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Subjects and Marks
-                  </label>
-                  {formData.subjects.map((subject, index) => <div key={index} className="flex items-center space-x-4 mb-3">
-                      <div className="flex-grow">
-                        <select value={subject.name} onChange={e => handleSubjectChange(index, 'name', e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                          <option value="">Select Subject</option>
-                          <option value="English">English</option>
-                          <option value="Afrikaans">Afrikaans</option>
-                          <option value="Mathematics">Mathematics</option>
-                          <option value="Mathematical Literacy">
-                            Mathematical Literacy
-                          </option>
-                          <option value="Physical Sciences">
-                            Physical Sciences
-                          </option>
-                          <option value="Life Sciences">Life Sciences</option>
-                          <option value="Geography">Geography</option>
-                          <option value="History">History</option>
-                          <option value="Accounting">Accounting</option>
-                          <option value="Business Studies">
-                            Business Studies
-                          </option>
-                          <option value="Economics">Economics</option>
-                          <option value="Computer Applications Technology">
-                            Computer Applications Technology
-                          </option>
-                          <option value="Information Technology">
-                            Information Technology
-                          </option>
-                          <option value="Life Orientation">
-                            Life Orientation
-                          </option>
-                        </select>
-                      </div>
-                      <div className="w-24">
-                        <input type="number" min="0" max="100" placeholder="Mark %" value={subject.mark} onChange={e => handleSubjectChange(index, 'mark', e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                      </div>
-                      {formData.subjects.length > 1 && <button type="button" onClick={() => removeSubject(index)} className="text-red-600 hover:text-red-800">
-                          Remove
-                        </button>}
-                    </div>)}
-                  {formData.subjects.length < 8 && <button type="button" onClick={addSubject} className="mt-2 text-blue-600 hover:text-blue-800">
-                      + Add Subject
-                    </button>}
-                </div>
-              </div>}
+                      
+           {step === 2 && (
+  <div className="space-y-6">
+    <h3 className="text-xl font-semibold text-gray-900">
+      Academic Information
+    </h3>
+
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-3">
+        Subjects and Marks
+      </label>
+
+      {/* Add Subject Section */}
+      <div className="flex gap-2 mb-4">
+        <select
+          value={selectedSubject}
+          onChange={(e) => setSelectedSubject(e.target.value)}
+          className="flex-1 px-4 py-2 border rounded"
+        >
+          <option value="">Select a Subject</option>
+          {subjects
+            .filter(option => !formData.subjects.some(s => s.name === option)) // Hide already added
+            .map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+        </select>
+
+        <input
+          type="text"
+          placeholder="Enter Mark"
+          value={subjectMark}
+          onChange={(e) => setSubjectMark(e.target.value)}
+          className="w-24 px-4 py-2 border rounded"
+        />
+
+        <button
+          type="button"
+          onClick={handleAddSubject}
+          disabled={formData.subjects.length >= 7}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Add
+        </button>
+      </div>
+
+      {/* Display Added Subjects */}
+      {formData.subjects.map((subject, index) => (
+        <div key={index} className="flex gap-2 mb-2">
+          <input
+            type="text"
+            name={`subject-name-${index}`}
+            value={subject.name}
+            onChange={(e) => handleSubjectChange(index, 'name', e.target.value)}
+            placeholder={`Subject ${index + 1}`}
+            className="flex-1 px-4 py-2 border rounded"
+            readOnly
+          />
+
+          <input
+            type="text"
+            name={`subject-mark-${index}`}
+            value={subject.mark}
+            onChange={(e) => handleSubjectChange(index, 'mark', e.target.value)}
+            placeholder="Mark"
+            className="w-24 px-4 py-2 border rounded"
+          />
+
+          <button
+            type="button"
+            onClick={() => removeSubject(index)}
+            className="text-red-600 hover:underline"
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+
             {step === 3 && <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-gray-900">
                   Preferences
@@ -237,7 +303,7 @@ export function StudentForm() {
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {['University', 'University of Technology', 'TVET College'].map(type => <div key={type} className="flex items-center">
-                        <input type="radio" id={type} name="preferredInstitutionType" value={type} checked={formData.preferredInstitutionType === type} onChange={handleChange} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
+                        <input type="radio" id={type} name="preferredInstitutionType" value={type} checked={formData.preferredInstitutionType === type} onChange={(e) => handleSelectChange(e, setFormData)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" />
                         <label htmlFor={type} className="ml-2 text-sm text-gray-700">
                           {type}
                         </label>
