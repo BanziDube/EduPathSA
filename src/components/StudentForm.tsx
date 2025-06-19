@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
 import axios from 'axios'; // <-- Make sure to install axios via npm/yarn
 
+// ✅ Define props interface
+interface StudentFormProps {
+  onSignOut: () => void;
+}
 
-
-export function StudentForm() {
+// ✅ Include props in the component function
+export function StudentForm({ onSignOut }: StudentFormProps) {
   const [step, setStep] = useState(1);
-
 
   type Subject = {
     name: string;
@@ -37,9 +40,11 @@ export function StudentForm() {
     preferredInstitutionType: '',
   });
 
-  // New state for selected file
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // ...rest of your logic
+
 
   // Handle change for text/select inputs
   const handleChange = (
@@ -180,41 +185,53 @@ export function StudentForm() {
   };
 
   return (
-    <section id="form" className="py-20 bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Get Your Personalized Recommendations
-          </h2>
-          <p className="text-xl text-gray-600">
-            Tell us about yourself, and our AI will generate tailored university,
-            course, and bursary recommendations for you
-          </p>
+  <section id="form" className="py-20 bg-gray-50">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          Get Your Personalized Recommendations
+        </h2>
+        <p className="text-xl text-gray-600">
+          Tell us about yourself, and our AI will generate tailored university,
+          course, and bursary recommendations for you
+        </p>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Sign Out Button */}
+        <div className="p-4 flex justify-end border-b">
+         <button
+            onClick={onSignOut}
+            className="text-sm text-red-600 hover:text-red-800 underline"
+          >
+            
+          </button>
         </div>
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b">
-            <div className="flex justify-between items-center">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      step >= i ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
-                    }`}
-                  >
-                    {i}
-                  </div>
-                  {i < 3 && (
-                    <div
-                      className={`h-1 w-16 sm:w-24 ${
-                        step > i ? 'bg-blue-600' : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  )}
+
+        {/* Step Indicator */}
+        <div className="p-6 border-b">
+          <div className="flex justify-between items-center">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    step >= i ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                  }`}
+                >
+                  {i}
                 </div>
-              ))}
-            </div>
+                {i < 3 && (
+                  <div
+                    className={`h-1 w-16 sm:w-24 ${
+                      step > i ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  ></div>
+                )}
+              </div>
+            ))}
           </div>
-          
+        </div>
+
           <form onSubmit={handleSubmit} className="p-6">
             {step === 1 && (
               <div className="space-y-6">
