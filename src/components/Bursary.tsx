@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 interface Subject {
@@ -15,25 +15,20 @@ interface FormData {
   preferredInstitutionType: string;
 }
 
-interface BursaryProps {
-  formData: FormData;
-}
-
 function createBursaryPrompt(formData: FormData): string {
-  const { firstName, province, grade, subjects, interests, preferredInstitutionType } = formData;
-  const academicSummary = subjects.map(sub => `${sub.name}: ${sub.mark}%`).join(', ');
-  const interestSummary = interests.join(', ');
+  const academicSummary = formData.subjects.map(sub => `${sub.name}: ${sub.mark}%`).join(', ');
+  const interestSummary = formData.interests.join(', ');
 
   return `
 You are an expert South African bursary advisor helping students discover both private and public funding options.
 
 Student Profile:
-- Name: ${firstName}
-- Province: ${province}
-- Grade: ${grade}
+- Name: ${formData.firstName}
+- Province: ${formData.province}
+- Grade: ${formData.grade}
 - Subjects & Marks: ${academicSummary}
 - Interests: ${interestSummary}
-- Preferred Institution Type: ${preferredInstitutionType}
+- Preferred Institution Type: ${formData.preferredInstitutionType}
 
 Please recommend:
 1. At least 4 bursaries or funding schemes, including NSFAS if applicable.
@@ -59,50 +54,61 @@ function formatResponse(raw: string): string {
     .trim();
 }
 
-export const Bursary: React.FC<BursaryProps> = ({ formData }) => {
+export function useBursaryRecommendations() {
   const [recommendations, setRecommendations] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      setLoading(true);
-      setError('');
-      const prompt = createBursaryPrompt(formData);
-      console.log('📤 Gemini Prompt:\n', prompt);
+  const generateBursaries = async (formData: FormData) => {
+  setLoading(true);
+  setError('');
+  setRecommendations('');
+  const prompt = createBursaryPrompt(formData);
 
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }]
-            })
-          }
-        );
-
-        const data = await response.json();
-        const rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        const cleaned = rawOutput ? formatResponse(rawOutput) : 'No recommendations found.';
-        setRecommendations(cleaned);
-      } catch (err) {
-        console.error(err);
-        setError('Something went wrong while fetching recommendations.');
-      } finally {
-        setLoading(false);
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
       }
-    };
+    );
 
-    fetchRecommendations();
-  }, [formData]);
+    const data = await response.json();
+    const rawOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const cleaned = rawOutput ? formatResponse(rawOutput) : 'No recommendations found.';
 
+    console.log("✅ Final Bursary Response:", cleaned); // <-- Add here
+
+    setRecommendations(cleaned);
+  } catch (err) {
+    console.error(err);
+    setError('Something went wrong while fetching recommendations.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  return {
+    generateBursaries,
+    recommendations,
+    loading,
+    error
+  };
+}
+
+export const BursaryDisplay: React.FC<{
+  recommendations: string;
+  loading: boolean;
+  error: string;
+}> = ({ recommendations, loading, error }) => {
   return (
-    <section className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-8">
-      <h2 className="text-2xl font-semibold text-blue-700 mb-4">
-        🎓 Bursary Recommendations
-      </h2>
+    <section className="bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-8 mt-6">
+      <h2 className="text-2xl font-semibold text-blue-700 mb-4">🎓 Bursary Recommendations</h2>
 
       {loading && (
         <div className="flex items-center text-gray-600 animate-pulse">
@@ -118,7 +124,11 @@ export const Bursary: React.FC<BursaryProps> = ({ formData }) => {
         </div>
       )}
 
-      {!loading && !error && (
+      {!loading && !error && !recommendations && (
+        <p className="text-gray-600 italic">Click "Get Recommendations" to view bursaries based on your profile.</p>
+      )}
+
+      {!loading && !error && recommendations && (
         <div className="space-y-4 text-gray-800 leading-relaxed">
           {recommendations.split('\n\n').map((para, idx) => (
             <div
@@ -137,3 +147,4 @@ export const Bursary: React.FC<BursaryProps> = ({ formData }) => {
     </section>
   );
 };
+

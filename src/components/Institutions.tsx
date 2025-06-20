@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { FormData } from '../interfaces/formTypes';
 
+
 interface RecommendationGeneratorProps {
   formData: FormData;
 }
 
 export function RecommendationGenerator({ formData }: RecommendationGeneratorProps) {
-  const [recommendations, setRecommendations] = useState('');
+  const [institutionRecommendations, setInstitutionRecommendations] = useState('');
+  const [bursaryRecommendations, setBursaryRecommendations] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -24,29 +26,54 @@ export function RecommendationGenerator({ formData }: RecommendationGeneratorPro
       return total;
     }, 0);
   };
-  
+
   const formatRecommendations = (rawText: string) => {
-    // Remove single and double asterisks
-    let formattedText = rawText.replace(/\*\*/g, ''); // Remove double asterisks
-    formattedText = formattedText.replace(/\*/g, ''); // Remove single asterisks
-    // Replace bullet points with HTML list items for better readability
+    let formattedText = rawText.replace(/\*\*/g, '');
+    formattedText = formattedText.replace(/\*/g, '');
     formattedText = formattedText
-      .replace(/(\n\s*\d+\.\s)/g, '<h3>$1</h3>') // Convert numbered sections to headers
-      .replace(/(\n\s*-\s)/g, '<li>') // Convert bullet points to list items
-      .replace(/(\n\s*•\s)/g, '<li>') // Convert bullet points with • to list items
-      .replace(/\n/g, '<br/>'); // Replace new lines with line breaks
-    // Wrap the entire text in a <div> for better structure
+      .replace(/(\n\s*\d+\.\s)/g, '<h3>$1</h3>')
+      .replace(/(\n\s*[-•]\s)/g, '<li>')
+      .replace(/\n/g, '<br/>');
     return `<div>${formattedText}</div>`;
+  };
+
+  const createBursaryPrompt = (formData: FormData): string => {
+    const academicSummary = formData.subjects.map(sub => `${sub.name}: ${sub.mark}%`).join(', ');
+    const interestSummary = formData.interests.join(', ');
+    return `
+You are an expert South African bursary advisor helping students discover both private and public funding options.
+
+Student Profile:
+- Name: ${formData.ethnicity}
+- Province: ${formData.province}
+- Grade: ${formData.grade}
+- Subjects & Marks: ${academicSummary}
+- Interests: ${interestSummary}
+- Preferred Institution Type: ${formData.preferredInstitutionType}
+
+Please recommend:
+1. At least 4 bursaries or funding schemes, including NSFAS if applicable.
+2. For each bursary, provide:
+   • Bursary name  
+   • Eligibility summary  
+   • Application deadline (if available)  
+   • Why this student qualifies  
+   • How to apply or get started  
+3. Prioritize funding programs that support financially needy students.
+Format cleanly. No asterisks. Keep it friendly and concise.
+`;
   };
 
   const handleGenerate = async () => {
     setLoading(true);
-    const aps = calculateAPS(formData.subjects);
-    const subjectDetails = formData.subjects
-      .map((s) => `  - ${s.name}: ${s.mark}`)
-      .join('\n');
+    setError('');
+    setInstitutionRecommendations('');
+    setBursaryRecommendations('');
 
-    const prompt = `
+    const aps = calculateAPS(formData.subjects);
+    const subjectDetails = formData.subjects.map((s) => `- ${s.name}: ${s.mark}`).join('\n');
+
+    const institutionPrompt = `
 Student Information:
 - Ethnicity: ${formData.ethnicity}
 - Gender: ${formData.gender}
@@ -61,42 +88,48 @@ Please list:
 1. Recommended qualifications this student is eligible for.
 2. Best-matched universities or institutions in South Africa.
 3. Admission chances based on APS and subjects.
-Keep it simple, helpful, and clear for a high school learner. Furthermore, provide the content in a bullet form and also provide Emojis if necessary.
-Bold the heading font instead of numbering them.`;
-    console.log('📤 Prompt:', prompt);
-    console.log('API Key:', import.meta.env.VITE_GEMINI_EJ_KEY); // Log the API key
+Keep it simple, helpful, and clear. Use bullet points and emojis. Bold headings instead of numbering.
+`;
+
+    const bursaryPrompt = createBursaryPrompt(formData);
 
     try {
-    const body = {
-      contents: [{ parts: [{ text: prompt }] }]
-    };
-    console.log('Request Body:', JSON.stringify(body)); // Log the request body
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_EJ_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      }
-    );
-    console.log('Response Status:', response.status); // Log the response status
-    const data = await response.json();
-    console.log('Response Data:', data); // Log the entire response data
-    const result =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text || // Adjust this based on the response structure
-      'No recommendation returned.';
+      const body = (prompt: string) => ({
+        contents: [{ parts: [{ text: prompt }] }]
+      });
 
-      // Format the recommendations before setting them
-      const formattedResult = formatRecommendations(result);
+      const [instRes, bursRes] = await Promise.all([
+        fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_EJ_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body(institutionPrompt))
+          }
+        ).then((res) => res.json()),
 
-      setRecommendations(formattedResult);
-  } catch (error) {
-    console.error('Failed to fetch Gemini response:', error);
-    setRecommendations('There was an error generating recommendations.');
-  } finally {
-    setLoading(false);
-  }
-};
+        fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body(bursaryPrompt))
+          }
+        ).then((res) => res.json())
+      ]);
+
+      const institutionOutput = instRes?.candidates?.[0]?.content?.parts?.[0]?.text || 'No institutional recommendations.';
+      const bursaryOutput = bursRes?.candidates?.[0]?.content?.parts?.[0]?.text || 'No bursary recommendations.';
+
+      setInstitutionRecommendations(formatRecommendations(institutionOutput));
+      setBursaryRecommendations(formatRecommendations(bursaryOutput));
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch recommendations.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="mt-6">
@@ -115,10 +148,17 @@ Bold the heading font instead of numbering them.`;
         </div>
       )}
 
-      {recommendations && (
+      {institutionRecommendations && (
         <div
           className="mt-4 p-4 bg-gray-100 rounded-md border border-gray-300"
-          dangerouslySetInnerHTML={{ __html: recommendations }} // Render formatted recommendations
+          dangerouslySetInnerHTML={{ __html: institutionRecommendations }}
+        />
+      )}
+
+      {bursaryRecommendations && (
+        <div
+          className="mt-4 p-4 bg-blue-50 rounded-md border border-blue-300"
+          dangerouslySetInnerHTML={{ __html: bursaryRecommendations }}
         />
       )}
     </div>
