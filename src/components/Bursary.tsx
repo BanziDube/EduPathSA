@@ -36,7 +36,7 @@ Student Profile:
 - Preferred Institution Type: ${preferredInstitutionType}
 
 Please recommend:
-1. At least 3 bursaries or funding schemes, including NSFAS if applicable.
+1. At least 4 bursaries or funding schemes, including NSFAS if applicable.
 2. For each bursary, provide:
    • Bursary name  
    • Eligibility summary  
