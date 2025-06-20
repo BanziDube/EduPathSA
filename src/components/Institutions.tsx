@@ -47,22 +47,29 @@ export function RecommendationGenerator({ formData }: RecommendationGeneratorPro
       .join('\n');
 
     const prompt = `
-Student Information:
+Based on the following student info, provide ONLY the following in **bullet form**, no extra explanation or paragraphs. Make it simple, clear, and helpful for a high school learner. Use emojis where helpful and dark bold each section title:
+One more thing in stead of replying with "Here's the requested information in bullet format:" can you replace with a heading called "Institution Recommendations" 
+
+Student Info:
 - Ethnicity: ${formData.ethnicity}
 - Gender: ${formData.gender}
 - Province: ${formData.province}
 - Grade: ${formData.grade}
-- Preferred Institution Type: ${formData.preferredInstitutionType}
+- Institution Type: ${formData.preferredInstitutionType}
 - Interests: ${formData.interests.join(', ') || 'None'}
-- APS Score: ${aps}
+- APS: ${aps}
 - Subjects & Marks:
 ${subjectDetails}
-Please list:
-1. Recommended qualifications this student is eligible for.
-2. Best-matched universities or institutions in South Africa.
-3. Admission chances based on APS and subjects.
-Keep it simple, helpful, and clear for a high school learner. Furthermore, provide the content in a bullet form and also provide Emojis if necessary.
-Bold the heading font instead of numbering them.`;
+
+Return only:
+
+**🎓 Recommended Qualifications (Based on APS & Subjects):**
+-  
+
+**🏫 Best-Matched Universities/Institutions in South Africa:**
+-  
+
+**📊 Admission Chances:**`;
     console.log('📤 Prompt:', prompt);
     console.log('API Key:', import.meta.env.VITE_GEMINI_EJ_KEY); // Log the API key
 
