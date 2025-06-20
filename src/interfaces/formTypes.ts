@@ -40,7 +40,8 @@ export const subjects = [
   'Accounting',
   'English',
   'Afrikaans',
-  'Business Studies'
+  'Business Studies',
+  'Life Orientation'
 ] as const;
 
 export type SubjectOption = typeof subjects[number];
