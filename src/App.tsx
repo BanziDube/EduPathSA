@@ -47,9 +47,15 @@ export function App() {
             element={<SignIn onSignInSuccess={handleSignInSuccess} />}
           />
           <Route path="/register" element={<RegisterPage />} />
-          <Route
+         <Route
             path="/student-form"
-            element={<StudentForm onSignOut={handleSignOut} />}
+            element={
+              <>
+                <StudentForm onSignOut={handleSignOut} />
+                <PerformanceButton />
+              </>
+            }
+            
           />
           <Route
             path="*"
@@ -59,7 +65,7 @@ export function App() {
       </main>
       <Footer />
       <ChatbotButton /> {/* 👈 Always visible fixed button */}
-      <PerformanceButton />
+  
     </div>
   </Router>
 );
