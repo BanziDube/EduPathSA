@@ -8,7 +8,11 @@ import { Footer } from './components/Footer';
 import RegisterPage from './RegisterPage';
 import { SignIn } from './SignIn';
 import { useState } from 'react';
-import { Recommendations } from './components/Recommendations'; // ✅ Imported
+import ChatbotButton from './components/temp'; // ✅
+import PerformanceButton from './components/PerformanceButton';
+
+
+
 
 export function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,43 +26,42 @@ export function App() {
     setIsLoggedIn(false);
   };
 
-  return (
-    <Router>
-      <div className="flex flex-col min-h-screen w-full bg-gray-50">
-        <Header isLoggedIn={isLoggedIn} onSignOut={handleSignOut} />
-        <main className="flex-grow">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <Hero />
-                  <Features />
-                  <HowItWorks />
-                </>
-              }
-            />
-            <Route
-              path="/signin"
-              element={<SignIn onSignInSuccess={handleSignInSuccess} />}
-            />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/student-form"
-              element={<StudentForm onSignOut={handleSignOut} />}
-            />
-            <Route
-              path="/recommendations"
-              element={<Recommendations />} // ✅ Correctly placed here
-            />
-            <Route
-              path="*"
-              element={<SignIn onSignInSuccess={handleSignInSuccess} />}
-            />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
-  );
+ return (
+  <Router>
+    <div className="flex flex-col min-h-screen w-full bg-gray-50">
+      <Header isLoggedIn={isLoggedIn} onSignOut={handleSignOut} />
+      <main className="flex-grow">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <Hero />
+                <Features />
+                <HowItWorks />
+              </>
+            }
+          />
+          <Route
+            path="/signin"
+            element={<SignIn onSignInSuccess={handleSignInSuccess} />}
+          />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/student-form"
+            element={<StudentForm onSignOut={handleSignOut} />}
+          />
+          <Route
+            path="*"
+            element={<SignIn onSignInSuccess={handleSignInSuccess} />}
+          />
+        </Routes>
+      </main>
+      <Footer />
+      <ChatbotButton /> {/* 👈 Always visible fixed button */}
+      <PerformanceButton />
+    </div>
+  </Router>
+);
+
 }
