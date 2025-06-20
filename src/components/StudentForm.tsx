@@ -1,6 +1,7 @@
+// StudentForm.tsx
 import React, { useState } from 'react';
 import { ArrowRightIcon } from 'lucide-react';
-
+import { RecommendationGenerator } from './Institutions';
 import {
   ethnicities,
   genders,
@@ -37,12 +38,10 @@ export function StudentForm() {
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    if (['ethnicity', 'gender', 'province', 'grade', 'subject'].includes(name)) {
+    if (["ethnicity", "gender", "province", "grade"].includes(name)) {
       const validOptions = optionsMap[name as SelectableField];
-      if (validOptions && !validOptions.includes(value)) {
+      if (!validOptions.includes(value)) {
         console.warn(`Invalid ${name} selection:`, value);
-      } else {
-        console.log(`Valid ${name} selection:`, value);
       }
     }
 
@@ -114,18 +113,18 @@ export function StudentForm() {
     }
   };
 
-  const nextStep = () => setStep(step + 1);
-  const prevStep = () => setStep(step - 1);
+  const nextStep = () => setStep((prev) => prev + 1);
+  const prevStep = () => setStep((prev) => prev - 1);
 
   return (
-    <section id="form" className="py-20 bg-gray-50">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Get Your Personalized Recommendations
           </h2>
           <p className="text-xl text-gray-600">
-            Tell us about yourself, and our AI will generate tailored university, course, and bursary recommendations for you
+            Tell us about yourself, and our AI will generate tailored university, course, and bursary recommendations for you.
           </p>
         </div>
 
@@ -148,9 +147,7 @@ export function StudentForm() {
                       >
                         <option value="">Select {field}</option>
                         {optionsMap[field].map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
+                          <option key={option} value={option}>{option}</option>
                         ))}
                       </select>
                     </div>
@@ -172,9 +169,7 @@ export function StudentForm() {
                     >
                       <option value="">Select a Subject</option>
                       {subjects.filter((s) => !formData.subjects.some((sub) => sub.name === s)).map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
+                        <option key={option} value={option}>{option}</option>
                       ))}
                     </select>
                     <input
@@ -193,7 +188,6 @@ export function StudentForm() {
                       Add
                     </button>
                   </div>
-
                   {formData.subjects.map((subject, index) => (
                     <div key={index} className="flex gap-2 mb-2">
                       <input
@@ -230,40 +224,30 @@ export function StudentForm() {
                     Areas of Interest (Select all that apply)
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {[
-                      'Science',
-                      'Engineering',
-                      'Medicine',
-                      'Arts',
-                      'Humanities',
-                      'Business',
-                      'Law',
-                      'Education',
-                      'Technology',
-                      'Social Sciences'
-                    ].map((interest) => (
-                      <div key={interest} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={interest}
-                          checked={formData.interests.includes(interest)}
-                          onChange={() => handleInterestToggle(interest)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                        <label htmlFor={interest} className="ml-2 text-sm text-gray-700">
-                          {interest}
-                        </label>
-                      </div>
-                    ))}
+                    {["Science", "Engineering", "Medicine", "Arts", "Humanities", "Business", "Law", "Education", "Technology", "Social Sciences"].map(
+                      (interest) => (
+                        <div key={interest} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id={interest}
+                            checked={formData.interests.includes(interest)}
+                            onChange={() => handleInterestToggle(interest)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <label htmlFor={interest} className="ml-2 text-sm text-gray-700">
+                            {interest}
+                          </label>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Preferred Institution Type
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {['University', 'University of Technology', 'TVET College'].map((type) => (
+                    {["University", "University of Technology", "TVET College"].map((type) => (
                       <div key={type} className="flex items-center">
                         <input
                           type="radio"
@@ -271,7 +255,7 @@ export function StudentForm() {
                           name="preferredInstitutionType"
                           value={type}
                           checked={formData.preferredInstitutionType === type}
-                          onChange={(e) => handleSelectChange(e)}
+                          onChange={handleSelectChange}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                         />
                         <label htmlFor={type} className="ml-2 text-sm text-gray-700">
@@ -284,8 +268,10 @@ export function StudentForm() {
               </div>
             )}
 
+            {step === 4 && <RecommendationGenerator formData={formData} />}
+
             <div className="mt-8 flex justify-between">
-              {step > 1 && (
+              {step > 1 && step < 4 && (
                 <button
                   type="button"
                   onClick={prevStep}
@@ -294,7 +280,7 @@ export function StudentForm() {
                   Back
                 </button>
               )}
-              {step < 3 ? (
+              {step < 4 && (
                 <button
                   type="button"
                   onClick={nextStep}
@@ -302,11 +288,10 @@ export function StudentForm() {
                 >
                   Next <ArrowRightIcon size={16} className="ml-2" />
                 </button>
-              ) : null}
+              )}
             </div>
           </form>
         </div>
-       
       </div>
     </section>
   );
